@@ -32,13 +32,23 @@ function cifrarCesar(mensagem,chave){
             let posicao = codMaius.search(letra)
             if (posicao != -1){
                 let novoIndice = (posicao + chave) % 26
-                letraNova = codMaius[novoIndice]
+                if (novoIndice < 0){
+                  letraNova = codMaius[novoIndice + 26]
+                }
+                else{
+                  letraNova = codMaius[novoIndice]
+                }
             }
             else{
                 posicao = codMin.search(letra)
                 if (posicao != -1){
                     novoIndice = (posicao + chave) % 26
-                    letraNova = codMin[novoIndice]
+                    if (novoIndice < 0){
+                      letraNova = codMin[novoIndice + 26]
+                    }
+                    else{
+                      letraNova = codMin[novoIndice]
+                    }
                 }
                 else{
                     letraNova = letra
@@ -100,7 +110,7 @@ function modPow(base, exp, mod) {
   return r;
 }
 
-function gerarChavesRSA(p, q) {
+function gerarChavesRSA_Didaticas(p, q) {
   const N = p * q;
   const phi = (p - 1) * (q - 1);
   let E = 3;
@@ -116,7 +126,7 @@ function gerarChavesRSA(p, q) {
   return { publica: { E, N }, privada: { D, N } };
 }
 
-function cifrarRSA(mensagem, E, N) {
+function cifrarRSA_Didatico(mensagem, E, N) {
   const out = [];
   for (let i = 0; i < mensagem.length; i++) {
     const x = mensagem.charCodeAt(i); 
@@ -125,7 +135,7 @@ function cifrarRSA(mensagem, E, N) {
   return out;
 }
 
-function decifrarRSA(mensagemCifrada, D, N) {
+function decifrarRSA_Didatico(mensagemCifrada, D, N) {
   const chars = [];
   for (let i = 0; i < mensagemCifrada.length; i++) {
     const x = modPow(mensagemCifrada[i], D, N);
@@ -135,46 +145,34 @@ function decifrarRSA(mensagemCifrada, D, N) {
 }
 
 // ===== TESTE =====
-console.log("\nCifra de César");
-const deslocamento = 3;
-const cifradaCesar = cifrarCesar(mensagem, deslocamento);
-const decifradaCesar = cifrarCesar(cifradaCesar, -deslocamento);
-console.log("Mensagem original :", mensagem);
-console.log("Cifrada (+3)      :", cifradaCesar);
-console.log("Decifrada (-3)    :", decifradaCesar);
-if (decifradaCesar === mensagem) {
-  console.log("César passou no teste!");
-} else {
-  console.log("César falhou no teste!");
-}
+// Atbash:
 
-console.log("\nCifra de Atbash");
-const cifradaAtbash = cifrarAtbash(mensagem);
-const decifradaAtbash = cifrarAtbash(cifradaAtbash);
-console.log("Mensagem original :", mensagem);
-console.log("Cifrada (Atbash)  :", cifradaAtbash);
-console.log("Decifrada         :", decifradaAtbash);
-if (decifradaAtbash === mensagem) {
-  console.log("Atbash passou no teste!");
-} else {
-  console.log("Atbash falhou no teste!");
-}
+console.log(cifrarAtbash("OlaMundo")); 
 
+// César:
 
-console.log("===== Vigenère =====");
-console.log("Mensagem:", mensagem);
-console.log("Chave:", vigenereChave);
-const vigenereCifrada = cifrarVigenere(mensagem, vigenereChave, 'codificar');
-const vigenereDecifrada = cifrarVigenere(vigenereCifrada, vigenereChave, 'decodificar');
-console.log("Cifrada :", vigenereCifrada);
-console.log("Decifrada:", vigenereDecifrada);
+console.log(cifrarCesar("criptografia", 3)); // Esperado: "fulswrjudild"
+console.log(cifrarCesar("fulswrjudild", -3)); // Esperado: "criptografia"
 
-console.log("\n===== RSA =====");
-const CHAVES = gerarChavesRSA(rsaP, rsaQ);
-console.log("Chave Pública (E,N):", CHAVES.publica);
-console.log("Chave Privada (D,N):", CHAVES.privada);
-const rsaCifrado = cifrarRSA(mensagem, CHAVES.publica.E, CHAVES.publica.N);
-const rsaDecifrado = decifrarRSA(rsaCifrado, CHAVES.privada.D, CHAVES.privada.N);
-console.log("Cifrado (números):", rsaCifrado);
-console.log("Decifrado         :", rsaDecifrado);
-console.log("\n===== FIM DOS TESTES =====");
+// Vigenère:
+
+const chaveV = "CHAVE";
+const codificadoV = cifrarVigenere("Enigma!", chaveV, 'codificar'); 
+console.log(codificadoV); // Ex: "Guibqc!!"
+console.log(cifrarVigenere(codificadoV, chaveV, 'decodificar')); // Esperado: "Enigma!"
+
+// RSA (Usar a função gerarChavesRSA_Didaticas):
+
+const PRIMO_1 = 17;
+const PRIMO_2 = 19;
+const CHAVES = gerarChavesRSA_Didaticas(PRIMO_1, PRIMO_2); 
+
+const textoOriginal = "OLA"; 
+
+// 1. Cifrar com a Chave Pública
+const cifrado = cifrarRSA_Didatico(textoOriginal, CHAVES.publica.E, CHAVES.publica.N);
+console.log("RSA Cifrado:", cifrado); // Array de números
+
+// 2. Decifrar com a Chave Privada
+const decifrado = decifrarRSA_Didatico(cifrado, CHAVES.privada.D, CHAVES.privada.N);
+console.log("RSA Decifrado:", decifrado); // Esperado: "OLA"
